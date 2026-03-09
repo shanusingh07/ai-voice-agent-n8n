@@ -1,0 +1,239 @@
+{
+  "name": "voice to text chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "d3c1ec79-1450-4f88-afc3-423b2ca52539",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -64
+      ],
+      "webhookId": "7a76cb38-f081-4987-99e8-626dc41d92a6",
+      "credentials": {
+        "telegramApi": {
+          "id": "ITpJf1XHKpkniodg",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "id": "2b193a57-f0c2-45b3-83ce-4a897e9548cf",
+      "name": "Get Voice File",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -64
+      ],
+      "webhookId": "0d170a9c-6f38-4acf-bf6a-ab6c23a92c90",
+      "credentials": {
+        "telegramApi": {
+          "id": "ITpJf1XHKpkniodg",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "transcribe",
+        "requestOptions": {}
+      },
+      "id": "04e565d2-7b59-4488-bcd4-1468abc12376",
+      "name": "Speech to Text",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -64
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "5YbQYdPbYjSHcVeD",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "You are a friendly food ordering assistant. Speak short and clear. Ask step by step: name, item, quantity, address.",
+        "options": {}
+      },
+      "id": "d77862b9-4027-47c9-9ca4-4161bb2f1dd0",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_c37f6e0602d97484f1fcd460219f8985839d7aaec40123be"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n\"text\": \"Hello Shanu\",\n\"model_id\": \"eleven_turbo_v2\"\n}",
+        "options": {}
+      },
+      "id": "6f40ae43-1216-4908-84ed-0e22ab5e41a1",
+      "name": "ElevenLabs TTS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        992,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}{{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "3b7ad161-c61e-49b3-a0e0-c0960bd5a7da",
+      "name": "Send Voice Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -64
+      ],
+      "webhookId": "fcbabccd-8b85-4946-ac1e-5978c1abcb98",
+      "credentials": {
+        "telegramApi": {
+          "id": "ITpJf1XHKpkniodg",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        512,
+        144
+      ],
+      "id": "423e82d4-1e0e-4060-b58e-bb5af222a7ef",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "VFixFWSybWeMdNdn",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Voice File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Voice File": {
+      "main": [
+        [
+          {
+            "node": "Speech to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Speech to Text": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "ElevenLabs TTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ElevenLabs TTS": {
+      "main": [
+        [
+          {
+            "node": "Send Voice Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "dc6a571c-87cb-49dc-b90e-062db92701b0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17cd473e8d497acebfc52eff32cea4775da054698a3966db8b759f0143587316"
+  },
+  "id": "IeGDevK9pIrdsole",
+  "tags": []
+}
