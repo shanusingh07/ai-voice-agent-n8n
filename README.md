@@ -77,3 +77,7 @@ Learning **Python, AI Automation, and GenAI Projects**
 ---
 
 ⭐ If you like this project, consider giving it a **star**!
+
+
+
+thank you !
